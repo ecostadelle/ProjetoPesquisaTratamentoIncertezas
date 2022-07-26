@@ -1,0 +1,228 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{minted}
+\usepackage{mathtools}
+\usepackage{amssymb} 
+\usepackage{tabularx}
+\usepackage{tabularray}
+\usepackage{xcolor}
+\usepackage[portuguese]{babel}
+\usepackage{tikz}
+\usetikzlibrary{automata,shapes,arrows,positioning,calc}
+
+
+\title{Projeto Pesquisa Tratamento Incertezas}
+\author{Ewerton Luiz Costadelle \\ Rafael Nink de Carvalho}
+\date{26 de agosto de 2022}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+
+\subsection{Base de dados}\label{base_de_dados}
+
+Para essa análise foi utilizada uma base de dados com 18.178 observações, do resultado de componentes curriculares ofertadas entre os anos de 2013 e 2020. Essa base foi extraída a partir de boletins de notas de 506 estudantes de um curso técnico de nível médio. Os alunos frequentam cerca de 16 disciplinas por ano e cada observação refere-se ao resultado individual do aluno em uma disciplina. O curso em questão possuiu dois planos pedagógicos, 4 (quatro) anos para ingressantes até 2013 e em 2014 iniciou-se o curso de 3 (três) anos. De modo que os atributos foram detalhados na tabela abaixo: \\
+
+\begin{longtblr}[
+    caption = {Boletins dos estudantes},
+    label = {boletins},
+  ]{
+    colspec = {|l|l|X|},
+    rowhead = 1,
+    hlines,
+    row{even} = {lightgray},
+    row{1} = {gray},
+  } 
+  \textbf{Campo} & \textbf{Tipo} & \textbf{Descrição} \\
+  ano & Numérico & Ano da observação [2013-2020]\\ 
+  periodo & Numérico & Periodo letivo no ano observado [1-4]\\ 
+  estudante & Nominal & Identificação anonimizada do estudante\\ 
+  disciplina & Nominal & Componente curricular da observação\\ 
+  ch & Numérico & Número de aulas programadas por ano na disciplina [0-120]\\ 
+  tipo & Nominal & As matriculas podem ser regulares ou especiais.\\ 
+  anp & Numérico & Número de aulas não presenciais no ano [0-120]\\ 
+  aulas & Numérico & Numero de aulas presenciais registradas [0-120]\\ 
+  faltas & Numérico & Quantidade de faltas no final do ano letivo [0-120]\\ 
+  justificadas & Numérico & Quantidade de faltas com justificativa legal no final do ano letivo [0-120]\\ 
+  percentual & Numérico & Percentual de frequencia do estudante [0-100\%]\\ 
+  nb1 & Numérico & Nota do 1º bimestre na componente curricular [0-100]\\ 
+  nb2 & Numérico & Nota do 2º bimestre na componente curricular [0-100]\\ 
+  ms1 & Numérico & Média aritmética das notas de 1º e 2º bimestres. Estudantes com média abaixo de 60 pontos são convocados para estudo de recuperação, do 1º semestre [0-100]\\ 
+  nr1 & Numérico & Nota obtida no estudo de recuperação do 1º semestre [0-100]\\ 
+  mr1 & Numérico & Média calculada após o estudo de recuperação. Até 2015 era a média entre ms1 e nr1. Em 2016, passou a ser substitutiva, quando nr1 é maior que ms1 [0-100]\\ 
+  nb3 & Numérico & Nota do 3º bimestre na componente curricular [0-100]\\ 
+  nb4 & Numérico & Nota do 4º bimestre na componente curricular [0-100]\\ 
+  ms2 & Numérico & Média aritmética das notas de 3º e 4º bimestres. Estudantes com média abaixo de 60 pontos são convocados para estudo de recuperação, do 2º semestre [0-100]\\ 
+  nr2 & Numérico & Nota obtida no estudo de recuperação do 2º semestre [0-100]\\ 
+  mr2 & Numérico & Média calculada após o estudo de recuperação. Até 2015 era a média entre ms2 e nr2. Em 2016, passou a ser substitutiva, quando nr2 é maior que ms2 [0-100]\\ 
+  ma & Numérico & Média aritmética entre mr1 e mr2. Estudantes com média abaixo de 60 pontos são ocnvocados para exame final.\\ 
+  nef & Numérico & Nota obtida no exame final [0-100]\\ 
+  mf & Numérico & É média ponderado de 60\% da nota da ma com 40\% da nef [0-100]\\
+  resultado & Categórico & Estudantes com nota mf maior ou igual a 50 pontos são considerados aprovados, caso contrários, reprovados [ap, ac, rt, rf]\\
+  resultado ano & Categórico & Até 2015, estudantes eram considerado aprovados caso ficassem retidos em 3 ou menos e podiam cursar cursá-las em regime de dependência. Em 2016, estudantes podem ser aprovados em conselhos de classe [Aprovado, Reprovado]\\ 
+  situação atual & Categórico & Situação atual (2022) do estudante no sistema acadêmico [Matriculado, Concluído, Transferência externa, Evadido, Jubilado]
+\end{longtblr}
+
+\begin{tabular}{l r r}
+    Aprovado & 911\\
+    Reprovado & 233\\
+    \textbf{Total} & \textbf{1144}
+\end{tabular}
+
+\subsection{Agregação dos dados}\label{agregacao_dos_dados}
+
+As notas das disciplinas foram agregadas por ano, a fim de reduzir o ruido. De modo que, a média de todas as notas do 1º bimestre formou o índice de rendimento acadêmico (\texttt{ira\_nb1}). Para as etapas posteriores a formação do índice considera a situação do estudante naquele momento. Para o \texttt{ira\_mr1}, é considerado a média aritmética entre as notas do 1º e 2º bimestre, ou a nota da recuperação, caso seja superior. Para o \texttt{ira\_nb3} foi feito uma média ponderada considerando dois terços da média após recuperação e um terço da nota do 3º bimestre. Nesse sentido, a cada passo o rendimento acadêmico pode ser mensurado, considerando as etapas anteriores.
+
+O algoritmo de A Tabela \ref{agregado} foi com 
+
+
+\begin{longtblr}[
+    caption = {Dados agregados},
+    label = {agregado},
+  ]{
+    colspec = {|l|l|X|},
+    rowhead = 1,
+    hlines,
+    row{even} = {lightgray},
+    row{1} = {gray},
+  } 
+  \textbf{Campo} & \textbf{Tipo} & \textbf{Descrição} \\
+    ano & Numérico & Ano da observação [2013--2020]\\ 
+    periodo & Numérico & Periodo letivo no ano observado [1--4]\\ 
+    estudante & Nominal & Identificação anonimizada do estudante\\ 
+    ira\_nb1 & Numérico & Média das notas do 1º bimestre \\
+    ira\_mr1 & Numérico & Média das notas após a recuperação semestral\\
+    ira\_nb3 & Numérico & Média ponderada de dois terços da média após recuperação e um terço da nota do 3º bimestre\\
+    rec\_s1 & Numérico & Quantidade de disciplinas em que o estudante foi convocado para estudos de recuperação no 1º semestre\\
+    rec\_s2 & Numérico & Quantidade de disciplinas em que o estudante foi convocado para estudos de recuperação no 2º semestre\\
+    qtd\_disciplinas & Numérico & Quantidade de disciplinas que o estudante cursou no ano\\
+    ap & Numérico & Quantidade de disciplinas aprovadas\\
+    ac & Numérico & Quantidade de disciplinas aprovadas com o recurso do conselho de classe\\
+    rt & Numérico & Quantidade de disciplinas em que o estudante ficou retido por nota\\
+    rf & Numérico & Quantidade de disciplinas em que o estudante ficou retido por falta\\
+    resultado\_final & Categórico & Até 2015, estudantes eram considerado aprovados caso ficassem retidos em 3 ou menos e podiam cursar cursá-las em regime de dependência. Em 2016, estudantes podem ser aprovados em conselhos de classe [Aprovado, Reprovado]\\ 
+    situacao\_atual & Categórico & Situação atual (2022) do estudante no sistema acadêmico [Matriculado, Concluído, Transferência externa, Evadido, Jubilado] \\
+    grupo & Numérico & Informação qualitativa do estudante no ano. Estudantes que foram aprovados sem recuperações recebem +2, aprovados com recuperação recebem +1, aprovados em conselho de classe recebem 0, retidos por nota recebem -1 e retidos por falta recebem -2\\
+\end{longtblr}
+
+  
+\subsection{Cadeia de Markov}\label{cadeia_de_markov}
+
+\begin{center}
+\begin{tikzpicture}[->, >=stealth', auto, semithick, node distance=2cm]
+
+\node[state] (Input)                             {Início};
+\node[state] (C)            [below of = Input]   {AC};
+\node[state] (B)            [left of = C]        {AP};
+\node[state] (A)            [left of = B]        {A+};
+\node[state] (D)            [right of = C]       {RT};
+\node[state] (E)            [right of = D]       {RF};
+
+\node[state] (AA)            [below of = A]        {A+};
+\node[state] (BB)            [below of = B]        {AP};
+\node[state] (CC)            [below of = C]        {AC};
+\node[state] (DD)            [below of = D]        {RT};
+\node[state] (EE)            [below of = E]        {RF};
+
+\node[state] (AAA)            [below of = AA]        {A+};
+\node[state] (BBB)            [below of = BB]        {AP};
+\node[state] (CCC)            [below of = CC]        {AC};
+\node[state] (DDD)            [below of = DD]        {RT};
+\node[state] (EEE)            [below of = EE]        {RF};
+
+\node[state] (Concluido)    [below of = BBB]       {Concluído};
+\node[state] (Evadido)      [right of = EE]       {Evadido};
+
+\node   [left of = A]        {1º};
+\node   [left of = AA]       {2º};
+\node   [left of = AAA]      {3º};
+
+
+\path(Input) edge[bend right]   node{6.1\%}   (A);
+\path(Input) edge[]   node{45.3\%}   (B);
+\path(Input) edge[]   node{16.3\%}   (C);
+\path(Input) edge[]    node{26.5\%}   (D);
+\path(Input) edge[bend left]    node{5.7\%}   (E);
+
+\path(E)     edge[bend left]   node{93.8\%}   (Evadido);
+\path(E)     edge[bend left]   node{6.2\%}   (D);
+
+
+\path(D)     edge[bend left]   node{2.4\%}   (E);
+\path(D)     edge[loop below]  node{21.4\%}   (D);
+\path(D)     edge[bend left]   node{14.3\%}   (C);
+\path(D)     edge[bend left]   node{25.0\%}   (B);
+\path(D)     edge[bend left]   node{36.9\%}   (Evadido);
+
+
+\path(C)     edge[bend left]   node{17.3\%}   (DD);
+\path(C)     edge[loop  below]  node{21.2\%}   (CC);
+\path(C)     edge[bend right]  node{23.1\%}   (BB);
+\path(C)     edge[bend left]   node{38.5\%}   (Evadido);
+
+
+
+\path(AAA)     edge[bend right]  node{100.0\%}   (Concluido);
+\path(BBB)     edge  node{100.0\%}   (Concluido);
+\path(CCC)     edge[bend left]  node{100.0\%}   (Concluido);
+
+[0.057, 0.265, 0.163, 0.453, 0.061]
+
+ [[[0.0, 0.062, 0.0, 0.0, 0.0, 0.0, 0.938],
+   [0.024, 0.214, 0.143, 0.25, 0.0, 0.0, 0.369],
+   [0.0, 0.173, 0.212, 0.231, 0.0, 0.0, 0.385],
+   [0.008, 0.098, 0.152, 0.629, 0.03, 0.0, 0.083],
+   [0.0, 0.067, 0.0, 0.4, 0.533, 0.0, 0.0]],
+   
+  [[0.333, 0.0, 0.0, 0.0, 0.0, 0.0, 0.667],
+   [0.042, 0.042, 0.125, 0.292, 0.0, 0.0, 0.5],
+   [0.059, 0.206, 0.206, 0.353, 0.029, 0.0, 0.147],
+   [0.0, 0.019, 0.111, 0.722, 0.074, 0.0, 0.074],
+   [0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0]],
+   
+  [[0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5],
+   [0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.9],
+   [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+   [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+   [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]]])
+
+\end{tikzpicture}
+\end{center}
+
+
+
+\[
+\begin{bmatrix}
+\pi_{0} \\
+\pi_{1} \\
+\pi_{2} \\
+\pi_{3} \\
+\pi_{4} \\
+\pi_{5} \\
+\pi_{6}
+\end{bmatrix}^T \times
+\begin{bmatrix}
+    1   & 0 & 0 & 0 & 0 & 0 & 0 \\
+    1-p & 0 & p & 0 & 0 & 0 & 0 \\
+    0 & 1-p & 0 & p & 0 & 0 & 0 \\
+    0 & 0 & 1-p & 0 & p & 0 & 0 \\
+    0 & 0 & 0 & 1-p & 0 & p & 0 \\
+    0 & 0 & 0 & 0 & 1-p & 0 & p \\
+    0 & 0 & 0 & 0 & 0 & 0 &   1 \\
+\end{bmatrix} =
+\begin{bmatrix}
+\pi_{0} \\
+\pi_{1} \\
+\pi_{2} \\
+\pi_{3} \\
+\pi_{4} \\
+\pi_{5} \\
+\pi_{6}
+\end{bmatrix}^T
+\]
+
+
+\end{document}
