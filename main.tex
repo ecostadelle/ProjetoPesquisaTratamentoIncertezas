@@ -15,7 +15,6 @@
 \usepackage{url}
 \usepackage{hyperref}
 \usepackage{graphicx} 
-\usepackage{auto-pst-pdf} 
 
 
 \title{Projeto Pesquisa Tratamento Incertezas}
@@ -272,61 +271,21 @@ Ao executar o código-fonte supracitado gera-se uma árvore escolhida no parâme
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{tree_0.png}
+\includegraphics[width=0.8\textwidth]{tree_0.png}
 \caption{Arvore 0 [0,9] do modelo treinado}
 \label{Tree}
 \end{figure}
 
 \section{Resultados e discussões}
 
-A partir dos dados agregados, modelou-se uma Cadeia de Markov de Tempo Discreto (CMTD) a fim de compreender o fluxo de estudantes durante o curso. Como os dados possuem turmas de 3 e 4 anos, preferiu-se limitar aos dados mais recentes para que a análise estive o mais próximo possível da realidade atual. A mudança ocorreu a partir de 2014 e, por essa razão, o intervalo de ingresso ficou restrito entre os anos de 2014 e 2018, de modo que são as turmas com tempo hábil de formatura até 2020. 
-
-Nessa análise exploratória, foram 245 estudantes que ingressaram no período supracitado, dos quais, ao considerar o estado inicial como um vetor, em que a primeira coluna refere-se aos estudantes que ficaram retidos no final do primeiro ano. A segunda coluna refere-se aos estudantes aprovados em conselho de classe e a terceira coluna os aprovados sem utilizar o recurso do conselho de classe. As quarta e quinta colunas referem-se aos estudantes que evadidos e concluídos, respectivamente. Essa últma informação foi a  obteve-se o seguinte resultado apresentado na Eq. \ref{estadoinicialanual}.
-
-\begin{equation}
-\begin{bmatrix}
-    79 & 40 & 126  
-\end{bmatrix}
-\label{estadoinicialanual}
-\end{equation}
+A partir dos dados agregados, modelou-se uma Cadeia de Markov de Tempo Discreto (CMTD) a fim de compreender o fluxo de estudantes durante o curso. Como os dados possuem turmas de 3 e 4 anos, preferiu-se limitar aos dados mais recentes para que a análise estive o mais próximo possível da realidade atual. A mudança ocorreu a partir de 2014 e, por essa razão, o intervalo de ingresso ficou restrito entre os anos de 2014 e 2018, de modo que são as turmas com tempo hábil de formatura até 2020. Nessa análise exploratória, foram 245 estudantes que ingressaram no período supracitado.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{markovperiodos.png}
+\includegraphics[width=0.99\textwidth]{cadeia.pdf}
 \caption{Cadeia de Markov representando a transição entre períodos}
 \label{markovPeriodos}
 \end{figure}
-
-
-\[
-\begin{bmatrix}
-\pi_{0} \\
-\pi_{1} \\
-\pi_{2} \\
-\pi_{3} \\
-\pi_{4} \\
-\pi_{5} \\
-\pi_{6}
-\end{bmatrix}^T \times
-\begin{bmatrix}
-    \frac{}{}   & 0 & 0 & 0 & 0 & 0 & 0 \\
-    1-p & 0 & p & 0 & 0 & 0 & 0 \\
-    0 & 1-p & 0 & p & 0 & 0 & 0 \\
-    0 & 0 & 1-p & 0 & p & 0 & 0 \\
-    0 & 0 & 0 & 1-p & 0 & p & 0 \\
-    0 & 0 & 0 & 0 & 1-p & 0 & p \\
-    0 & 0 & 0 & 0 & 0 & 0 &   1 \\
-\end{bmatrix} =
-\begin{bmatrix}
-\pi_{0} \\
-\pi_{1} \\
-\pi_{2} \\
-\pi_{3} \\
-\pi_{4} \\
-\pi_{5} \\
-\pi_{6}
-\end{bmatrix}^T
-\]
 
 Uma segunda análise, utilizando cadeia de Markov, modela a partir da base de dados agregada, a evolução das médias acumuladas dos bimestres ao longo do ano letivo, para tal as notas foram discretizadas em intervalos iguais a 25 pontos de um total de 100 pontos, sendo a maior nota A e a menor nota D, estados descritos na cadeia corresponde a essa classificação, por fim o estado final, aprovado ou reprovado.  Foi desconsiderado o último bimestre letivo, no intuito de avaliar o seu comportamento em tempo hábil de uma ação de intervenção pedagógica.
 
@@ -445,7 +404,7 @@ $, que trata do aproveitamento do primeiro bimestre, da maior para a menor nota 
 
 \subsection{Predição}
 
-Quanto a análise e predição utilizando \emph{Random Forest} pode-se obter os seguintes resultados: percentual de acerto por classificador, acurácia e matriz de confusão utilizando o código-fonte a seguir: 
+Quanto a análise e predição utilizando \emph{Random Forest} pode-se obter os seguintes resultados: percentual de acerto por categorização, acurácia e matriz de confusão utilizando o código-fonte a seguir: 
 
 \begin{listing}[H]
 \begin{minted}[frame=lines,fontsize=\footnotesize,breaklines]{python}
