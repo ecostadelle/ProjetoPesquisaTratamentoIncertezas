@@ -1,0 +1,46 @@
+digraph G {
+    
+    rankdir=LR
+    node [shape=circle]
+    
+    "Início" -> "1AP"[label =0.514]
+    "Início" -> "1AC"[label =0.163]
+    "Início" -> "1RT"[label =0.322]
+    
+    "1RT" -> "1RT"[label =0.210]
+    "1RT" -> "1AC"[label =0.120]
+    "1RT" -> "1AP"[label =0.210]
+    "1RT" -> "Evadido"[label =0.460]
+    
+    "1AC" -> "2RT"[label =0.173]
+    "1AC" -> "2AC"[label =0.212]
+    "1AC" -> "2AP"[label =0.231]
+    "1AC" -> "Evadido"[label =0.385]
+    
+    "1AP" -> "2RT"[label =0.102]
+    "1AP" -> "2AC"[label =0.136]
+    "1AP" -> "2AP"[label =0.687]
+    "1AP" -> "Evadido"[label =0.075]
+    
+    "2RT" -> "2RT"[label =0.111]
+    "2RT" -> "2AC"[label =0.111]
+    "2RT" -> "2AP"[label =0.259]
+    "2RT" -> "Evadido"[label =0.519]
+    
+    "2AC" -> "3RT"[label =0.265]
+    "2AC" -> "3AC"[label =0.206]
+    "2AC" -> "3AP"[label =0.382]
+    "2AC" -> "Evadido"[label =0.147]
+    
+    "2AP" -> "3RT"[label =0.017]
+    "2AP" -> "3AC"[label =0.100]
+    "2AP" -> "3AP"[label =0.817]
+    "2AP" -> "Evadido"[label =0.067]
+    
+    "3RT" -> "3RT"[label =0.083]
+    "3RT" -> "3AP"[label =0.083]
+    "3RT" -> "Evadido"[label =0.833]
+    
+    "3AC" -> "Concluído"[label =1]
+    "3AP" -> "Concluído"[label =1]
+}
