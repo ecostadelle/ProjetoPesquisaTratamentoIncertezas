@@ -11,6 +11,11 @@
 \usepackage[portuguese]{babel}
 \usepackage{tikz}
 \usetikzlibrary{automata,shapes,arrows,positioning,calc}
+\usepackage{quoting}
+\usepackage{url}
+
+\usepackage{graphicx} 
+\usepackage{auto-pst-pdf} 
 
 
 \title{Projeto Pesquisa Tratamento Incertezas}
@@ -21,8 +26,24 @@
 
 \maketitle
 
-\section{Introduction}
+\section{Introdução}
 
+Mineração de Dados (MD) na descrição de Lin e Cercone \cite{Lin2012} pode ser definida como um processo de extração de informações implícitas, previamente desconhecidas e potencialmente úteis, a partir de uma grande quantidade de dados, por meio de técnicas específicas para a descoberta de conhecimento, também descrito em Witten \textit{et al.} \cite{Witten2016} e Tan \cite{Tan2019}.
+
+A Mineração de Dados Educacionais (MDE) é uma área de aplicação da MD e segundo Baker \textit{et al.} \cite{Baker2011} 
+
+
+\begin{quoting}[rightmargin=0cm,leftmargin=2.5cm]
+		{\footnotesize 
+			\noindent tem como principal foco o desenvolvimento de métodos para explorar conjuntos de dados coletados em ambientes educacionais. Assim, é possível compreender de forma mais eficaz e adequada os alunos, como eles aprendem, o papel do contexto na qual a aprendizagem ocorre, além de outros fatores que influenciam a aprendizagem.
+		}
+\end{quoting}
+
+Neste viés o presente trabalho aborda técnicas de MDE aplicados sobre dados oriundos do sistema acadêmico SUAP (\url{https://suap.ifro.edu.br/}), na sequência apresenta como possibilidade a modelação dos dados utilizando cadeia de Markov para descrever a transição entre anos letivos, bem como, a transição entre bimestre letivos.
+
+Para predizer o resultado final do aluno utilizou-se da técnica de predição \textit{Random Forest}, alicerçada sobre as métricas e a conceituação de árvores.
+
+Na sequência discorre-se sobre os resultados apresentados na análise.
 
 \section{Base de dados}\label{base_de_dados}
 
@@ -106,94 +127,29 @@ O algoritmo de A Tabela \ref{agregado} foi com
     rt & Numérico & Quantidade de disciplinas em que o estudante ficou retido por nota\\
     rf & Numérico & Quantidade de disciplinas em que o estudante ficou retido por falta\\
     resultado\_final & Categórico & Até 2015, estudantes eram considerado aprovados caso ficassem retidos em 3 ou menos e podiam cursar cursá-las em regime de dependência. Em 2016, estudantes podem ser aprovados em conselhos de classe [Aprovado, Reprovado]\\ 
-    situacao\_atual & Categórico & Situação atual (2022) do estudante no sistema acadêmico [Matriculado, Concluído, Transferência externa, Evadido, Jubilado] \\
-    grupo & Categórico & Informação qualitativa do estudante no ano. A: concluiu o ano letivo com êxito, sem recuperações; B: concluiu o ano letivo com êxito, com pelo menos uma recuperação, sem aprovação por conselho de classe ou dependência; C: concluiu o ano letivo com êxito, com pelo menos uma aprovação por conselho de classe ou dependência; D: retido por nota ou por falta em até 3 disciplinas; e E: retido por falta em 4 ou mais disciplinas.\\
+    situacao\_atual & Categórico & Situação atual (2022) do estudante no sistema acadêmico [Matriculado, Concluído, Transferência externa, Evadido, Jubilado]
 \end{longtblr}
 
   
-\subsection{Cadeia de Markov}\label{cadeia_de_markov}
+\subsection{Análise exploratória}\label{cadeia_de_markov}
 
-\begin{center}
-\begin{tikzpicture}[->, >=stealth', auto, semithick, node distance=2cm]
+A partir dos dados agregados, modelou-se uma Cadeia de Markov de Tempo Discreto (CMTD) a fim de compreender o fluxo de estudantes durante o curso. Como os dados possuem turmas de 3 e 4 anos, preferiu-se limitar aos dados mais recentes para que a análise estive o mais próximo possível da realidade atual. A mudança ocorreu a partir de 2014 e, por essa razão, o intervalo de ingresso ficou restrito entre os anos de 2014 e 2018, de modo que são as turmas com tempo hábil de formatura até 2020. 
 
-\node[state] (Input)                             {Início};
-\node[state] (C)            [below of = Input]   {AC};
-\node[state] (B)            [left of = C]        {AP};
-\node[state] (A)            [left of = B]        {A+};
-\node[state] (D)            [right of = C]       {RT};
-\node[state] (E)            [right of = D]       {RF};
+Foram 245 estudantes que ingressaram no período supracitado, dos quais, ao considerar o estado inicial como um vetor, em que a primeira coluna refere-se aos estudantes que ficaram retidos no final do primeiro ano. A segunda coluna refere-se aos estudantes aprovados em conselho de classe e a terceira coluna os aprovados sem utilizar o recurso do conselho de classe. As quarta e quinta colunas referem-se aos estudantes que evadidos e concluídos, respectivamente. Essa últma informação foi a  obteve-se o seguinte resultado apresentado na Eq. \ref{estadoinicialanual}.
 
-\node[state] (AA)            [below of = A]        {A+};
-\node[state] (BB)            [below of = B]        {AP};
-\node[state] (CC)            [below of = C]        {AC};
-\node[state] (DD)            [below of = D]        {RT};
-\node[state] (EE)            [below of = E]        {RF};
+\begin{equation}
+\begin{bmatrix}
+    79 & 40 & 126  
+\end{bmatrix}
+\label{estadoinicialanual}
+\end{equation}
 
-\node[state] (AAA)            [below of = AA]        {A+};
-\node[state] (BBB)            [below of = BB]        {AP};
-\node[state] (CCC)            [below of = CC]        {AC};
-\node[state] (DDD)            [below of = DD]        {RT};
-\node[state] (EEE)            [below of = EE]        {RF};
-
-\node[state] (Concluido)    [below of = BBB]       {Concluído};
-\node[state] (Evadido)      [right of = EE]       {Evadido};
-
-\node   [left of = A]        {1º};
-\node   [left of = AA]       {2º};
-\node   [left of = AAA]      {3º};
-
-
-\path(Input) edge[bend right]   node{6.1\%}   (A);
-\path(Input) edge[]   node{45.3\%}   (B);
-\path(Input) edge[]   node{16.3\%}   (C);
-\path(Input) edge[]    node{26.5\%}   (D);
-\path(Input) edge[bend left]    node{5.7\%}   (E);
-
-\path(E)     edge[bend left]   node{93.8\%}   (Evadido);
-\path(E)     edge[bend left]   node{6.2\%}   (D);
-
-
-\path(D)     edge[bend left]   node{2.4\%}   (E);
-\path(D)     edge[loop below]  node{21.4\%}   (D);
-\path(D)     edge[bend left]   node{14.3\%}   (C);
-\path(D)     edge[bend left]   node{25.0\%}   (B);
-\path(D)     edge[bend left]   node{36.9\%}   (Evadido);
-
-
-\path(C)     edge[bend left]   node{17.3\%}   (DD);
-\path(C)     edge[loop  below]  node{21.2\%}   (CC);
-\path(C)     edge[bend right]  node{23.1\%}   (BB);
-\path(C)     edge[bend left]   node{38.5\%}   (Evadido);
-
-
-
-\path(AAA)     edge[bend right]  node{100.0\%}   (Concluido);
-\path(BBB)     edge  node{100.0\%}   (Concluido);
-\path(CCC)     edge[bend left]  node{100.0\%}   (Concluido);
-
-[0.057, 0.265, 0.163, 0.453, 0.061]
-
- [[[0.0, 0.062, 0.0, 0.0, 0.0, 0.0, 0.938],
-   [0.024, 0.214, 0.143, 0.25, 0.0, 0.0, 0.369],
-   [0.0, 0.173, 0.212, 0.231, 0.0, 0.0, 0.385],
-   [0.008, 0.098, 0.152, 0.629, 0.03, 0.0, 0.083],
-   [0.0, 0.067, 0.0, 0.4, 0.533, 0.0, 0.0]],
-   
-  [[0.333, 0.0, 0.0, 0.0, 0.0, 0.0, 0.667],
-   [0.042, 0.042, 0.125, 0.292, 0.0, 0.0, 0.5],
-   [0.059, 0.206, 0.206, 0.353, 0.029, 0.0, 0.147],
-   [0.0, 0.019, 0.111, 0.722, 0.074, 0.0, 0.074],
-   [0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0]],
-   
-  [[0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5],
-   [0.0, 0.0, 0.0, 0.1, 0.0, 0.0, 0.9],
-   [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-   [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
-   [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0]]])
-
-\end{tikzpicture}
-\end{center}
-
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{markovperiodos.png}
+\caption{Cadeia de Markov representando a transição entre períodos}
+\label{markovPeriodos}
+\end{figure}
 
 
 \[
@@ -207,7 +163,7 @@ O algoritmo de A Tabela \ref{agregado} foi com
 \pi_{6}
 \end{bmatrix}^T \times
 \begin{bmatrix}
-    1   & 0 & 0 & 0 & 0 & 0 & 0 \\
+    \frac{}{}   & 0 & 0 & 0 & 0 & 0 & 0 \\
     1-p & 0 & p & 0 & 0 & 0 & 0 \\
     0 & 1-p & 0 & p & 0 & 0 & 0 \\
     0 & 0 & 1-p & 0 & p & 0 & 0 \\
@@ -225,6 +181,122 @@ O algoritmo de A Tabela \ref{agregado} foi com
 \pi_{6}
 \end{bmatrix}^T
 \]
+
+Uma segunda análise, utilizando cadeia de Markov, modela a partir da base de dados agregada, a evolução das médias acumuladas dos bimestres ao longo do ano letivo, para tal as notas foram discretizadas em intervalos iguais a 25 pontos de um total de 100 pontos, sendo a maior nota A e a menor nota D, estados descritos na cadeia corresponde a essa classificação, por fim o estado final, aprovado ou reprovado.  Foi desconsiderado o último bimestre letivo, no intuito de avaliar o seu comportamento em tempo hábil de uma ação de intervenção pedagógica.
+
+\begin{center}
+\begin{tikzpicture}[->, >=stealth', auto, semithick, node distance=2.5cm]
+
+\node[state] (Input)                    {Início};
+\node[state] (1B)   [below of = Input] {B};
+\node[state] (1A)   [left of = 1B]    {A};
+\node[state] (1C)   [right of = 1B]   {C};
+\node[state] (1D)   [right of = 1C]   {D};
+
+
+\node[state] (2B)   [below of = 1B] {B};
+\node[state] (2A)   [left of = 2B]    {A};
+\node[state] (2C)   [right of = 2B]   {C};
+\node[state] (2D)   [right of = 2C]   {D};
+
+\node[state] (3B)   [below of = 2B] {B};
+\node[state] (3A)   [left of = 3B]    {A};
+\node[state] (3C)   [right of = 3B]   {C};
+\node[state] (3D)   [right of = 3C]   {D};
+
+
+\node[state] (Ap)   [below of = 3B]   {Aprovado};
+\node[state] (Rep)   [right of = Ap]   {Reprovado};
+
+\node   [left of = 1A]      {1º Bimestre};
+\node   [left of = 2A]      {2º Bimestre};
+\node   [left of = 3A]      {3º Bimestre};
+
+\path(Input) edge              node{0.150}   (1A);
+\path(Input) edge              node{0.692}    (1B);
+\path(Input) edge              node{0.122}    (1C);
+\path(Input) edge              node{0.036}    (1D);
+
+\path(1A)     edge   node{0.924}   (2A);
+\path(1A)     edge[bend left=30]   node{0.076}   (2B);
+
+\path(1B)     edge[bend right=30]   node{0.067}   (2A);
+\path(1B)     edge   node{0.918}   (2B);
+\path(1B)     edge[bend left=30]   node{0.015}   (2C);
+
+\path(1C)     edge[bend right=30]   node{0.518}   (2B);
+\path(1C)     edge   node{0.417}   (2C);
+\path(1C)     edge[bend left=30]   node{0.065}   (2D);
+
+\path(1D)     edge[bend right=15]   node{0.024}   (2B);
+\path(1D)     edge[bend right=30]   node{0.171}   (2C);
+\path(1D)     edge   node{0.805}   (2D);
+
+
+
+\path(2A)     edge   node{0.825}   (3A);
+\path(2A)     edge[bend left=30]   node{0.175}   (3B);
+
+\path(2B)     edge[bend right=30]   node{0.063}   (3A);
+\path(2B)     edge   node{0.905}   (3B);
+\path(2B)     edge[bend left=30]   node{0.032}   (3C);
+
+\path(2C)     edge[bend right=30]   node{0.091}   (3B);
+\path(2C)     edge   node{0.766}   (3C);
+\path(2C)     edge[bend left=30]   node{0.143}   (3D);
+
+\path(2D)     edge[bend right=30]   node{0.048}   (3C);
+\path(2D)     edge   node{0.952}   (3D);
+
+
+\path(3A)     edge   node{0.990}   (Ap);
+\path(3A)     edge   node{0.010}   (Rep);
+
+\path(3B)     edge   node{0.858}   (Ap);
+\path(3B)     edge   node{0.142}   (Rep);
+
+\path(3C)     edge   node{0.250}   (Ap);
+\path(3C)     edge   node{0.750}   (Rep);
+
+\path(3D)     edge   node{0.020}   (Ap);
+\path(3D)     edge   node{0.980}   (Rep);
+
+\end{tikzpicture}
+\end{center}
+
+A cadeia de Markov supracitada pode ser representada pelo diagrama a seguir, sendo que os dados apresentados refletem os três primeiros bimestres letivos e o estado final, os indicadores 1A, 1B, e assim sucessivamente 3D, correspondem a que bimestre e aproveitamento seguem na transição. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{sankey2.png}
+\caption{Gráfico de Sankey de transição bimestral}
+\label{sankey}
+\end{figure}
+
+Ainda, considerando o estado inicial como o vetor
+$
+\begin{bmatrix}
+    172 & 791 & 139 & 41    
+\end{bmatrix}
+$, que trata do aproveitamento do primeiro bimestre, da maior para a menor nota conforme discretização, e para efeitos de estudos usando a matriz de transição entre o primeiro bimestre e segundo bimestre:
+\[
+\begin{bmatrix}
+    0.924 & 0.067 & 0 & 0 \\
+    0.076 & 0.918 & 0.518 & 0.024 \\
+    0 & 0.015 & 0.417 & 0.171 \\
+    0 & 0 & 0.065 & 0.805 \\
+\end{bmatrix} 
+\]
+
+é possível predizer as notas seguintes conforme o gráfico a seguir:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{graf.png}
+\caption{Gráfico de transição}
+\label{graf}
+\end{figure}
+
 
 \section{Um segundo método para a predição} \label{sec:firstpage}
 
@@ -375,6 +447,33 @@ Ao executar o código-fonte supracitado gera-se uma árvore escolhida no parâme
 \end{figure}
 
 \section{Resultados e discussões}
+
+
+
+Quanto a análise e predição utilizando \emph{Random Forest} pode-se obter os seguintes resultados: percentual de acerto por classificador, acurácia e matriz de confusão utilizando o código-fonte a seguir: 
+
+\begin{listing}[H]
+\begin{minted}[frame=lines,fontsize=\footnotesize,breaklines]{python}
+from sklearn.metrics import accuracy_score, recall_score, confusion_matrix
+
+print(recall_score(y_test.values.ravel(), y_pred, average=None))
+print(accuracy_score(y_test.values.ravel(),y_pred))
+print(confusion_matrix(y_test.values.ravel(),y_pred))
+\end{minted}
+\caption{Impressão de resultados utilizando \emph{Random Forest} por Scikit-learn}
+\end{listing}
+
+Para o percentual de acerto por classificador, tem-se, 96\% para aprovados e 57\% para alunos reprovados, o que acarreta uma acurácia de 88\%.
+
+A matriz de confusão para essa análise é dada por:
+\[
+\begin{bmatrix}
+    218 & 8 \\
+    26 & 34 \\
+\end{bmatrix} 
+\]
+E notável que o algoritmo conseguiu uma boa previsão para alunos aprovados diferentemente dos alunos reprovados. Uma possível causa para esse dissonância é justificada pelo desbalanceamento dos dados com 911 aprovados frente à 233 reprovados. Para contornar esse problema pode-se utilizar o algoritmo  \emph{bootstrap} supracitado.
+
 
 \section{Conclusões}
 		

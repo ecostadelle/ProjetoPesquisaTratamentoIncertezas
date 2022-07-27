@@ -1,0 +1,89 @@
+
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{minted}
+\usepackage{mathtools}
+\usepackage{amssymb} 
+\usepackage{tabularx}
+\usepackage{tabularray}
+\usepackage{xcolor}
+\usepackage[square,sort,comma,numbers]{natbib}
+\renewcommand{\bibsection}{\section{Referências}}
+\usepackage[portuguese]{babel}
+\usepackage{tikz}
+\usetikzlibrary{automata,shapes,arrows,positioning,calc}
+\usepackage{quoting}
+\usepackage{url}
+
+\begin{document}
+
+\begin{center}
+\begin{tikzpicture}[->, >=stealth', auto, semithick, node distance=2cm]
+
+\node[state] (Input)                    {Início};
+\node[state] (1AC)   [below of = Input] {AC};
+\node[state] (1AP)   [left of = 1AC]    {AP};
+\node[state] (1RT)   [right of = 1AC]   {RT};
+
+\node[state] (2AP)   [below of = 1AP]   {AP};
+\node[state] (2AC)   [below of = 1AC]   {AC};
+\node[state] (2RT)   [below of = 1RT]   {RT};
+
+\node[state] (3AP)   [below of = 2AP]   {AP};
+\node[state] (3AC)   [below of = 2AC]   {AC};
+\node[state] (3RT)   [below of = 2RT]   {RT};
+
+\node[state] (Con)   [below of = 3AP]   {Concluído};
+\node[state] (Eva)   [below of = 3RT]   {Evasão};
+
+\node   [left of = 1AP]      {1º ano};
+\node   [left of = 2AP]      {2º ano};
+\node   [left of = 3AP]      {3º ano};
+
+
+\path(Input)   edge               node{126}  (1AP);
+\path(Input)   edge               node{40}   (1AC);
+\path(Input)   edge               node{79}   (1RT);
+
+\path(1RT)     edge[loop above]   node{21}   (1RT);
+\path(1RT)     edge[bend right]   node{12}   (1AC);
+\path(1RT)     edge[bend left]    node{21}   (1AP);
+\path(1RT)     edge[bend left]    node{46}   (Eva);
+
+\path(1AC)     edge[bend left=15] node{9}    (2RT);
+\path(1AC)     edge[bend left]    node{11}   (2AC);
+\path(1AC)     edge               node{12}   (2AP);
+\path(1AC)     edge[bend left]    node{20}   (Eva);
+
+\path(1AP)     edge[bend left=15] node{15}   (2RT);
+\path(1AP)     edge[bend left]    node{20}   (2AC);
+\path(1AP)     edge               node{101}  (2AP);
+\path(1AP)    edge[bend right=60] node{11}  (Eva);
+
+\path(2RT)     edge[loop above]   node{3}    (2RT);
+\path(2RT)     edge[bend right]   node{3}    (2AC);
+\path(2RT)     edge[bend left]    node{7}    (2AP);
+\path(2RT)     edge[bend left]    node{14}   (Eva);
+
+\path(2AC)     edge[bend left=15] node{9}    (3RT);
+\path(2AC)     edge[bend left]    node{7}    (3AC);
+\path(2AC)     edge               node{13}   (3AP);
+\path(2AC)     edge[bend left]    node{5}    (Eva);
+
+\path(2AP)     edge[bend left=15] node{2}    (3RT);
+\path(2AP)     edge[bend left]    node{12}   (3AC);
+\path(2AP)     edge               node{98}   (3AP);
+\path(2AP)    edge[bend right=60] node{8}   (Eva);
+
+\path(3RT)     edge[loop above]   node{1}    (3RT);
+\path(3RT)     edge[bend left]    node{1}    (3AP);
+\path(3RT)     edge               node{10}   (Eva);
+
+\path(3AC)     edge               node{19}   (Con);
+\path(3AP)     edge               node{112}  (Con);
+
+
+\end{tikzpicture}
+\end{center}
+
+\end{document}
